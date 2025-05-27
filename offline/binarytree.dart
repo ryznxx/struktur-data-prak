@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:collection';
 
 class Node<T> {
   T key;
@@ -35,8 +36,6 @@ class BinaryTree<T> {
       return;
     }
 
-    List<dynamic> test_queue = [root!.key];
-    print(test_queue);
     List<Node<T>> queue = [root!];
     while (queue.isNotEmpty) {
       Node<T> temp = queue.removeAt(0);
@@ -57,7 +56,6 @@ class BinaryTree<T> {
     }
   }
 
-  // 1. Method untuk menambahkan berdasarkan Level Order (rekursif)
   void insertLevelOrderRecursive(T newValue) {
     if (root == null) {
       root = Node<T>(newValue);
@@ -69,6 +67,33 @@ class BinaryTree<T> {
       if (_insertAtLevel(root, newValue, level, 0)) {
         break;
       }
+    }
+  }
+
+  void insertQueue(T value) {
+    if (root == null) {
+      root = Node<T>(value);
+      return;
+    }
+
+    Queue<Node<T>> queue = Queue<Node<T>>();
+    queue.add(root!);
+
+    while (queue.isNotEmpty) {
+      Node<T> current = queue.removeFirst();
+
+      if (current.left == null) {
+        current.left = Node<T>(value);
+        return; // Selesai!
+      }
+
+      if (current.right == null) {
+        current.right = Node<T>(value);
+        return; // Selesai!
+      }
+
+      queue.add(current.left!);
+      queue.add(current.right!);
     }
   }
 
@@ -104,7 +129,6 @@ class BinaryTree<T> {
     return 1 + (leftDepth > rightDepth ? leftDepth : rightDepth);
   }
 
-  // 2. Method untuk menambahkan data berdasarkan target dengan linear search
   bool insertByTarget(T targetValue, T newValue, {bool asLeftChild = true}) {
     Node<T>? targetNode = _linearSearch(root, targetValue);
 
@@ -149,9 +173,6 @@ class BinaryTree<T> {
     return _linearSearch(node.right, targetValue);
   }
 
-  // 3. Method untuk traversal non-rekursif menggunakan stack (list)
-
-  // In-Order Traversal (non-rekursif)
   void inOrderNonRecursive() {
     if (root == null) {
       print("Tree kosong");
@@ -164,23 +185,19 @@ class BinaryTree<T> {
     print("In-Order Traversal (Non-Recursive): ");
 
     while (stack.isNotEmpty || current != null) {
-      // Push semua node kiri ke stack
       while (current != null) {
         stack.add(current);
         current = current.left;
       }
 
-      // Pop dari stack dan cetak
       current = stack.removeLast();
       stdout.write("${current.key} ");
 
-      // Pindah ke subtree kanan
       current = current.right;
     }
     stdout.write("\n");
   }
 
-  // Pre-Order Traversal (non-rekursif)
   void preOrderNonRecursive() {
     if (root == null) {
       print("Tree kosong");
@@ -191,16 +208,16 @@ class BinaryTree<T> {
 
     print("Pre-Order Traversal (Non-Recursive): ");
 
+    
+
     while (stack.isNotEmpty) {
       Node<T> current = stack.removeLast();
       stdout.write("${current.key} ");
 
-      // Push anak kanan terlebih dahulu (akan diproses setelah anak kiri)
       if (current.right != null) {
         stack.add(current.right!);
       }
 
-      // Push anak kiri
       if (current.left != null) {
         stack.add(current.left!);
       }
@@ -208,7 +225,6 @@ class BinaryTree<T> {
     stdout.write("\n");
   }
 
-  // Post-Order Traversal (non-rekursif)
   void postOrderNonRecursive() {
     if (root == null) {
       print("Tree kosong");
@@ -220,38 +236,32 @@ class BinaryTree<T> {
 
     print("Post-Order Traversal (Non-Recursive): ");
 
-    // Menggunakan dua stack untuk post-order
     while (stack1.isNotEmpty) {
       Node<T> current = stack1.removeLast();
       stack2.add(current);
 
-      // Push anak kiri terlebih dahulu
       if (current.left != null) {
         stack1.add(current.left!);
       }
 
-      // Push anak kanan
       if (current.right != null) {
         stack1.add(current.right!);
       }
     }
 
-    // Pop semua elemen dari stack2 dan cetak
     while (stack2.isNotEmpty) {
       stdout.write("${stack2.removeLast().key} ");
     }
     stdout.write("\n");
   }
 
-  // Method untuk menampilkan semua jenis traversal
-  void displayAllTraversals() {
+  void displayAllTraversal() {
     print("\n=== TRAVERSAL METHODS ===");
     preOrderNonRecursive();
     inOrderNonRecursive();
     postOrderNonRecursive();
   }
 
-  // Method untuk menampilkan struktur tree secara visual
   void displayTreeStructure() {
     print("\n=== TREE STRUCTURE ===");
     _printTreeStructure(root, "", true);
@@ -282,57 +292,19 @@ class BinaryTree<T> {
 }
 
 void main() {
-  BinaryTree<int> tree = BinaryTree<int>();
+  BinaryTree<dynamic> tree = BinaryTree<dynamic>();
 
   print("=== TESTING BINARY TREE OPERATIONS ===\n");
 
-  // Test 1: Insert menggunakan level order biasa
-  print("1. Membuat tree dengan insertLevelOrder:");
-  tree.insertRootTree(1);
-  tree.insertLevelOrder(2);
+  tree.insertRootTree("a");
+  tree.insertLevelOrder("b");
   tree.insertLevelOrder(3);
   tree.insertLevelOrder(4);
   tree.insertLevelOrder(5);
-  tree.printTree();
-  tree.displayTreeStructure();
+  tree.insertQueue(9);
 
-  // Test 2: Insert menggunakan level order rekursif
-  print("\n2. Menambahkan node 6 dengan insertLevelOrderRecursive:");
+  print("\nMenambahkan node 6 dengan insertLevelOrderRecursive:");
   tree.insertLevelOrderRecursive(6);
-  tree.printTree();
   tree.displayTreeStructure();
-
-  // Test 3: Insert berdasarkan target
-  print("\n3. Testing insertByTarget:");
-  tree.insertByTarget(
-    2,
-    7,
-    asLeftChild: true,
-  ); // Tambah 7 sebagai anak kiri dari 2
-  tree.insertByTarget(
-    3,
-    8,
-    asLeftChild: false,
-  ); // Tambah 8 sebagai anak kanan dari 3
-  tree.insertByTarget(10, 9); // Target tidak ada
-  tree.displayTreeStructure();
-
-  // Test 4: Non-recursive traversals
-  tree.displayAllTraversals();
-
-  print("\n=== TESTING DENGAN TREE BARU ===");
-
-  // Test dengan tree yang lebih kompleks
-  BinaryTree<String> stringTree = BinaryTree<String>();
-  stringTree.insertRootTree("A");
-  stringTree.insertLevelOrder("B");
-  stringTree.insertLevelOrder("C");
-  stringTree.insertLevelOrder("D");
-  stringTree.insertLevelOrder("E");
-  stringTree.insertLevelOrder("F");
-  stringTree.insertLevelOrder("G");
-
-  print("\nString Tree Structure:");
-  stringTree.displayTreeStructure();
-  stringTree.displayAllTraversals();
+  tree.displayAllTraversal();
 }
